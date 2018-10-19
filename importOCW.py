@@ -33,7 +33,7 @@ column = {# TOP側 #
           "URL":"URL",
          #"講義室":"Room",
           "単位数":"Credit",
-          "開講クォーター":"Quater",
+          "開講クォーター":"Quarter",
           "使用言語":"Language",
           # シラバス側 #
           "授業計画・課題":"LecturePlan",
@@ -43,8 +43,8 @@ column = {# TOP側 #
           "学院":"Gakuin"}
 
 #limit値　越えて設定した場合，要素数ぶんが最大になる
-Glimit = 1 #頭からいくつ学院数見るか
-Llimit = 1 #頭からいくつ講義詳細見るか
+Glimit = 2 #頭からいくつ学院数見るか
+Llimit = 5 #頭からいくつ講義詳細見るか
 
 '''
 OCWから学院一覧を取得するスクリプト(6個くらいだから必要ない気もする)
@@ -165,6 +165,11 @@ def fetch_OCW(Gakuin,Lecture):
 
 #講義情報をデータベースに格納する
 def insertLecture(column,LectureData):
+    #前処理(該当箇所が存在しないOCWページがあるので，それの対策)
+    for k in column:
+        if k not in LectureData:
+            if k == "授業計画・課題": LectureData[k] = "[]"
+            else: LectureData[k] = ""
     with connection.cursor() as cursor:
         sql = "INSERT INTO lecture ({}) ".format(",".join(map(lambda x:column[x],column)))
         sql += "VALUES ({}) ".format(",".join(map(lambda x:"\'{}\'".format(LectureData[x]),column)))
