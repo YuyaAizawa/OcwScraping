@@ -31,7 +31,7 @@ column = {# TOP側 #
           "URL":"URL",
          #"講義室":"Room",
           "単位数":"Credit",
-          "開講クォーター":"Quater",
+          "開講クォーター":"Quarter",
           "使用言語":"Language",
           # シラバス側 #
           "授業計画・課題":"LecturePlan",
