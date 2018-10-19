@@ -172,7 +172,7 @@ def insertLecture(column,LectureData):
             else: LectureData[k] = ""
     with connection.cursor() as cursor:
         sql = "INSERT INTO lecture ({}) ".format(",".join(map(lambda x:column[x],column)))
-        sql += "VALUES ({}) ".format(",".join(map(lambda x:"\'{}\'".format(LectureData[x]),column)))
+        sql += "VALUES ({}) ".format(",".join(map(lambda x:"\'{}\'".format(pymysql.escape_string(LectureData[x])),column)))
         sql += "ON DUPLICATE KEY UPDATE {};".format(",".join(["{} = VALUES({})".format(column[k],column[k]) for k in list(filter(lambda x:x!="科目コード",column))]))
         cursor.execute(sql)
         print("\t\tUPDATE Lecture:",LectureData["講義名"])
