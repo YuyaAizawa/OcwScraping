@@ -94,7 +94,8 @@ def getLectures(name,url):
         name = item.find('td',class_='course_title').a.string #講義名
         lecture_url = urlprefix + item.find('td',class_='course_title').a['href']
         teachers = [te.string for te in item.find('td',class_='lecturer').find_all('a')]
-        quater = item.find('td',class_='opening_department').a.string	#TODO ちゃんととれてない
+        quaterColumn = item.find('td',class_='opening_department')	#TODO テーブルに開講元カラムが存在しない場合に対応する
+        quater = quaterColumn.a.string if quaterColumn is not None else ''
         if not name or not code:	# 文字列が空の場合はスキップ
             continue
         if code:
@@ -150,8 +151,14 @@ def fetch_OCW(Gakuin,Lecture):
         elif key.ul is not None: #関連する科目
             OCW[keyString] = ",".join([j.text for j in key.ul.find_all("li")])
 
-        else: #そのほか(文章で書かれた項目)
+        elif key.p is not None: #上記以外の、文章で書かれた項目
             OCW[keyString] = "\n".join(key.p.strings)
+
+        else: #そのほか(例：動画)
+            #法学（民事法）Ａ（http://www.ocw.titech.ac.jp/index.php?module=General&action=T0300&GakubuCD=7&KamokuCD=110100&LeftTab=graduate&KougiCD=201800860&Nendo=2018&lang=JA&vid=03）に「講義紹介動画」あり
+            #暫定処置として、無視している
+            pass
+
 
     #詳細ページに記載のなかった項目は適宜
     OCW["講義名"] = Lecture["name"]
