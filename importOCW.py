@@ -85,31 +85,33 @@ def getLectures(name,url):
 
     print("\tGet Lectures:",name)
 
-    table = soup.find('table',class_='ranking-list').tbody
+    tables = soup.find_all('table',class_='ranking-list')
 
     LecList = []
 
-    for item in table.find_all('tr'):
-        code = item.find('td',class_='code').string
-        name = item.find('td',class_='course_title').a.string #講義名
-        lecture_url = urlprefix + item.find('td',class_='course_title').a['href']
-        teachers = [te.string for te in item.find('td',class_='lecturer').find_all('a')]
-        quaterColumn = item.find('td',class_='opening_department')	#TODO テーブルに開講元カラムが存在しない場合に対応する
-        quater = quaterColumn.a.string if quaterColumn is not None else ''
-        if not name or not code:	# 文字列が空の場合はスキップ
-            continue
-        if code:
-            code = code.strip()
-        if name:
-            name = name.strip()
-        if quater:
-            quater = quater.strip()
-        #print(name)
-        #print(teachers)
-        #print(lecture_url)
-        #print(quater)
+    for t in tables:
+        table = t.tbody
+        for item in table.find_all('tr'):
+            code = item.find('td',class_='code').string
+            name = item.find('td',class_='course_title').a.string #講義名
+            lecture_url = urlprefix + item.find('td',class_='course_title').a['href']
+            teachers = [te.string for te in item.find('td',class_='lecturer').find_all('a')]
+            quaterColumn = item.find('td',class_='opening_department')	#TODO テーブルに開講元カラムが存在しない場合に対応する
+            quater = quaterColumn.a.string if quaterColumn is not None else ''
+            if not name or not code:	# 文字列が空の場合はスキップ
+                continue
+            if code:
+                code = code.strip()
+            if name:
+                name = name.strip()
+            if quater:
+                quater = quater.strip()
+            #print(name)
+            #print(teachers)
+            #print(lecture_url)
+            #print(quater)
 
-        LecList.append({"name":name,"lecture_url":lecture_url})
+            LecList.append({"code":code,"name":name,"lecture_url":lecture_url})
 
     return LecList
 
@@ -184,6 +186,14 @@ def insertLecture(column,LectureData):
         cursor.execute(sql)
         print("\t\tUPDATE Lecture:",LectureData["講義名"])
 
+#LectureとGakuinの結びつきデータベースの挿入操作
+def insertLforG(column,code,gakuin):
+    with connection.cursor() as cursor:
+        sql = "INSERT IGNORE INTO LforG ({},{}) ".format(column["科目コード"],column["学院"])
+        sql += "VALUES (\'{}\',\'{}\') ".format(code,gakuin)
+        cursor.execute(sql)
+        print("\t\tUPDATE LforG:",code,"-",gakuin)
+
 #OCWスクレイピング実行
 if __name__=='__main__':
     print("OCWデータのスクレイピングを始めます")
@@ -191,5 +201,6 @@ if __name__=='__main__':
         for Lecture in getLectures(Gakuin["gakuin"],Gakuin["gakuin_url"])[:Llimit]:
             OCWData = fetch_OCW(Gakuin,Lecture)
             insertLecture(column,OCWData)
+            insertLforG(column,Lecture["code"],Gakuin["gakuin"])
             connection.commit()
     print("OCWデータのスクレイピングを完了しました")

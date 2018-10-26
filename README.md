@@ -31,7 +31,15 @@ KEY設定およびそれに対するUPDATE処理により講義情報の更新�
 
   (PRIMARY KEY設定を変更する場合，createTable()を少し変える必要があります)
 
-connectionとcolumnの情報はそれぞれ同一にしてください(recreateOCWTable.pyで設定し，importOCW.pyにコピーするのがオススメだと思います)
+- python3.6 importLforG.py
+
+  講義と学院の対応づけだけ更新したい時用(講義ページ重いので)
+
+- python3.6 recreateLforGTable.py
+
+  OCWTableを誤削除しないためと，importLforGと同じく講義と学院の対応づけだけ再構築したい時用
+
+connectionとcolumnの情報は上記全て同一にしてください(recreateOCWTable.pyで設定し，importOCW.py等ほか3ファイルにコピーするのがオススメだと思います)
 
 - scrapPage.ipynb
 
