@@ -1,15 +1,12 @@
 import pymysql
 
 '''
-    recreateOCWTable.py
+    recreateLforGTable.py
 
-(新規にテーブルを構築する場合はdropTable()を#でコメントアウトするよう願います)
-講義情報のテーブルを構築し直します
-打ち込んですぐ行われたらやばいので，質問フェーズを設けてます
-(yを入力すると再構築が行われ，それ以外で再構築を中止します)
-(PRIMARY KEY設定を変更する場合，createTable()を少し変える必要があります)
-
-connectionとcolumnの情報はimportOCW.pyとおなじにしてね！
+Lecture for Gakuin
+いい名称出てこなかった
+OCWTableを誤削除しないためと，
+importLforGと同じく講義と学院の対応づけだけ再構築したい時用
 '''
 
 connection = pymysql.connect(host='localhost',
@@ -40,31 +37,6 @@ column = {# TOP側 #
           # 検索用 #
           "学院":"Gakuin"}
 
-#TABLEをつくる　データベースの構造が完全になったら不要
-def createTable(column):
-    with connection.cursor() as cursor:
-        KEY_COLUMN = "科目コード"
-        KEY_LENGTH = 10
-
-        sub_column = []
-        for k in column:
-            if column[k] == KEY_COLUMN:
-                #key処理そのいち
-                sub_column.append(column[k]+" TEXT NOT NULL")
-            else:
-                sub_column.append(column[k]+" TEXT")
-
-        sub_column.append("PRIMARY KEY({}({}))".format(column[KEY_COLUMN],KEY_LENGTH)) #key処理そのに
-        sql = "CREATE TABLE lecture({});".format(",".join(sub_column))
-        #print(sql)
-        cursor.execute(sql)
-
-#TABLEを削除する
-def dropTable():
-    with connection.cursor() as cursor:
-        sql = "DROP TABLE lecture;"
-        cursor.execute(sql)
-
 #LforGのTABLEをつくる　1回しかしなそう
 def createLforGtable(column):
     with connection.cursor() as cursor:
@@ -84,14 +56,11 @@ def dropLforGtable():
         cursor.execute(sql)
 
 if __name__=='__main__':
-    print("本当にOCW Tableを再構築しますか？(する：y，しない：otherwise)")
+    print("本当にOCW LforG Tableを削除しますか？(する：y，しない：otherwise)")
     if input()=="y":
-        #新規作成する場合はdrop2つともコメントアウト
-        dropTable()
         dropLforGtable()
-        createTable(column)
         createLforGtable(column)
         connection.commit()
-        print("OCW Tableを再構築しました")
+        print("LforG Tableを再構築しました")
     else:
-        print("OCW Tableの再構築を中止しました")
+        print("LforG Tableの再構築を中止しました")
