@@ -130,9 +130,9 @@ def fetch_OCW(Gakuin,Lecture):
     for key in soup.find(attrs={"class":"gaiyo-data clearfix"}).find_all("dl"): #上部
         value_list = []
         for value in key.dd.strings:
-            value = value.strip()
+            value = value.strip().replace(', ', ',').replace(',', ', ')
             if len(value)>0: value_list.append(value)
-        OCW[key.dt.text] = ",".join(value_list)
+        OCW[key.dt.text] = ", ".join(value_list)
 
     for key in soup.find_all(attrs={"class":"cont-sec"}): #下部
         keyString = key.h3.text
