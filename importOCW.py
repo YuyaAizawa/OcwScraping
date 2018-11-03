@@ -130,7 +130,7 @@ def fetch_OCW(Gakuin,Lecture):
     for key in soup.find(attrs={"class":"gaiyo-data clearfix"}).find_all("dl"): #上部
         value_list = []
         for value in key.dd.strings:
-            value = value.strip().replace(" ","").replace("\n","")
+            value = value.strip()
             if len(value)>0: value_list.append(value)
         OCW[key.dt.text] = ",".join(value_list)
 
