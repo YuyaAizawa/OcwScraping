@@ -1,4 +1,6 @@
 import pymysql
+import sys
+import traceback
 import requests
 from bs4 import BeautifulSoup
 
@@ -183,7 +185,18 @@ def insertLecture(column,LectureData):
         sql = "INSERT INTO lecture ({}) ".format(",".join(map(lambda x:column[x],column)))
         sql += "VALUES ({}) ".format(",".join(map(lambda x:"\'{}\'".format(pymysql.escape_string(LectureData[x])),column)))
         sql += "ON DUPLICATE KEY UPDATE {};".format(",".join(["{} = VALUES({})".format(column[k],column[k]) for k in list(filter(lambda x:x!="科目コード",column))]))
-        cursor.execute(sql)
+
+        try:
+            cursor.execute(sql)
+        except pymysql.err.InternalError as e:
+            error_code = e.args[0]
+            if error_code != 1366:
+                traceback.print_exc()
+                sys.exit(1)
+            # 変な文字コード（バイト列）があってエラーが出る際の対処（めったに起きないはず）
+            non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), '')
+            cursor.execute(sql.translate(non_bmp_map))
+
         print("\t\tUPDATE Lecture:",LectureData["講義名"])
 
 #LectureとGakuinの結びつきデータベースの挿入操作
