@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 '''
-    importOCW.py
+    importOCW_Full.py
 
 講義情報のテーブルにOCWからスクレイピングしてきた講義情報を格納していきます
 中断して続きからやるみたいな器用なことはできないので，main部いじってそれっぽくしてください(ごめん)
@@ -13,9 +13,7 @@ from bs4 import BeautifulSoup
 記述を変更するとしたらconnection，各Limit値，column，main部のいずれかのハズです
 (PRIMARY KEY設定を変更する場合，insertLecture()を少し変える必要があります)
 
-ScrapManager.txtはない場合新規作成されますが，変な文字列入ってるとエラーを吐くと思います(多分)
-学院,URL　で1行となっており，一番上の学院だけを取ってきて
-取り終わったら次の学院が一番上に来るようファイルが書き換えられます
+こちらは全講義を一括で取ることを想定として記述されています　そうじゃない方はimportOCW.pyにて
 
 connectionとcolumnの情報はrecreateOCWTable.pyとおなじにしてね！
 '''
@@ -49,7 +47,8 @@ column = {# TOP側 #
           "学院":"Gakuin"}
 
 #limit値　越えて設定した場合，要素数ぶんが最大になる
-Llimit = 1 #頭からいくつ講義詳細見るか
+Glimit = 2 #頭からいくつ学院数見るか
+Llimit = 5 #頭からいくつ講義詳細見るか
 
 '''
 OCWから学院一覧を取得するスクリプト(6個くらいだから必要ない気もする)
@@ -213,32 +212,10 @@ def insertLforG(column,code,gakuin):
 #OCWスクレイピング実行
 if __name__=='__main__':
     print("OCWデータのスクレイピングを始めます")
-    #読み込む
-    try:
-        with open("ScrapManager.txt","r") as p:
-            Gakuins = [s.strip() for s in p.readlines()]
-    except IOError:
-        Gakuins = []
-
-    if not len(Gakuins)>0:
-        Gakuins = ["{},{}".format(PAGE["gakuin"],PAGE["gakuin_url"]) for PAGE in getGakuinList()]
-
-    #ここで処理
-    '''
-    今はエラーがあった場合その学院で止まる設定
-    エラーがあったら次の学院見るようにする場合はdelの文を消してGakuins.pop(0)で読み込む
-    '''
-    gsub = Gakuins[0].split(",")
-    Gakuin = {'gakuin':gsub[0],'gakuin_url':gsub[1]}
-    for Lecture in getLectures(Gakuin["gakuin"],Gakuin["gakuin_url"])[:Llimit]:
-        OCWData = fetch_OCW(Gakuin,Lecture)
-        insertLecture(column,OCWData)
-        insertLforG(column,Lecture["code"],Gakuin["gakuin"])
-        connection.commit()
-    del Gakuins[0]
-
-    #書き込む
-    with open("ScrapManager.txt","w") as p:
-        p.write("\n".join(Gakuins))
-
+    for Gakuin in getGakuinList()[:Glimit]:
+        for Lecture in getLectures(Gakuin["gakuin"],Gakuin["gakuin_url"])[:Llimit]:
+            OCWData = fetch_OCW(Gakuin,Lecture)
+            insertLecture(column,OCWData)
+            insertLforG(column,Lecture["code"],Gakuin["gakuin"])
+            connection.commit()
     print("OCWデータのスクレイピングを完了しました")
