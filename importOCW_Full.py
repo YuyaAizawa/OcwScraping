@@ -2,6 +2,7 @@ import pymysql
 import sys
 import traceback
 import requests
+import time
 from bs4 import BeautifulSoup
 
 '''
@@ -58,33 +59,39 @@ gakuinListの各要素は次のような辞書に鳴っている
 	'url' : その学院の授業の一覧のurl,
 }
 '''
-def getGakuinList():
-	url = "http://www.ocw.titech.ac.jp/"
-	response = requests.get(url)
-	soup = BeautifulSoup(response.content,"lxml")
+def getGakuinList(LOG):
+    url = "http://www.ocw.titech.ac.jp/"
+    start = time.time() #ここから時間計測
+    response = requests.get(url)
+    elapsed_time = time.time() - start #ここまで時間計測
+    LOG.write("{}_ScrapTime:{}[sec]\n".format("学院リスト",round(elapsed_time,3)))
+    soup = BeautifulSoup(response.content,"lxml")
 
-	print("Get GakuinList")
+    print("Get GakuinList")
 
-	topMainNav = soup.find("ul",id="top-mein-navi")
+    topMainNav = soup.find("ul",id="top-mein-navi")
 
-	gakubus = topMainNav.find_all(class_="gakubuBox")
+    gakubus = topMainNav.find_all(class_="gakubuBox")
 
-	gakuinList = []
-	for gakubu_div in gakubus:
-		gakuin = gakubu_div.find(class_="gakubuHead").span.string
-		#if gakuin[-2::] != "学院":
-		#	continue
-		gakuin_url = url + gakubu_div.parent['href']
-		gakuinList.append({'gakuin':gakuin,'gakuin_url':gakuin_url})
+    gakuinList = []
+    for gakubu_div in gakubus:
+        gakuin = gakubu_div.find(class_="gakubuHead").span.string
+        #if gakuin[-2::] != "学院":
+        #	continue
+        gakuin_url = url + gakubu_div.parent['href']
+        gakuinList.append({'gakuin':gakuin,'gakuin_url':gakuin_url})
 
-	return gakuinList
+    return gakuinList
 
 '''
 学院名とurlを渡されたらその学院の授業一覧を持ってくる
 '''
-def getLectures(name,url):
+def getLectures(name,url,LOG):
     urlprefix = "http://www.ocw.titech.ac.jp"
+    start = time.time() #ここから時間計測
     response = requests.get(url)
+    elapsed_time = time.time() - start #ここまで時間計測
+    LOG.write("\t{}_ScrapTime:{}[sec]\n".format(name,round(elapsed_time,3)))
     soup = BeautifulSoup(response.content,'lxml')
 
     print("\tGet Lectures:",name)
@@ -124,8 +131,11 @@ def getLectures(name,url):
 #アクセスランキングは必要に感じなかったので空
 
 #時折text内に凄いへんな文字が入る可能性がある(元のOCWの書かれ方のせい)
-def fetch_OCW(Gakuin,Lecture):
+def fetch_OCW(Gakuin,Lecture,LOG):
+    start = time.time() #ここから時間計測
     response = requests.get(Lecture["lecture_url"])
+    elapsed_time = time.time() - start #ここまで時間計測
+    LOG.write("\t\t{}_ScrapTime:{}[sec]\n".format(Lecture["name"],round(elapsed_time,3)))
     soup = BeautifulSoup(response.content, "html.parser")
     print("\t\tSCRAPE Lecture:",Lecture["name"])
 
@@ -212,10 +222,11 @@ def insertLforG(column,code,gakuin):
 #OCWスクレイピング実行
 if __name__=='__main__':
     print("OCWデータのスクレイピングを始めます")
-    for Gakuin in getGakuinList()[:Glimit]:
-        for Lecture in getLectures(Gakuin["gakuin"],Gakuin["gakuin_url"])[:Llimit]:
-            OCWData = fetch_OCW(Gakuin,Lecture)
-            insertLecture(column,OCWData)
-            insertLforG(column,Lecture["code"],Gakuin["gakuin"])
-            connection.commit()
+    with open("ScrapTimeLog.txt","a") as LOG:
+        for Gakuin in getGakuinList(LOG)[:Glimit]:
+            for Lecture in getLectures(Gakuin["gakuin"],Gakuin["gakuin_url"],LOG)[:Llimit]:
+                OCWData = fetch_OCW(Gakuin,Lecture,LOG)
+                insertLecture(column,OCWData)
+                insertLforG(column,Lecture["code"],Gakuin["gakuin"])
+                connection.commit()
     print("OCWデータのスクレイピングを完了しました")
