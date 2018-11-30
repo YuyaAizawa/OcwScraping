@@ -213,32 +213,21 @@ def insertLforG(column,code,gakuin):
 #OCWスクレイピング実行
 if __name__=='__main__':
     print("OCWデータのスクレイピングを始めます")
-    #読み込む
-    try:
-        with open("ScrapManager.txt","r") as p:
-            Gakuins = [s.strip() for s in p.readlines()]
-    except IOError:
-        Gakuins = []
+    Gakuins = [{'name': '理学院', 'url': 'http://www.ocw.titech.ac.jp//index.php?module=General&action=T0100&GakubuCD=1&lang=JA'},
+                {'name': '工学院', 'url': 'http://www.ocw.titech.ac.jp//index.php?module=General&action=T0100&GakubuCD=2&lang=JA'},
+                {'name': '物質理工学院', 'url': 'http://www.ocw.titech.ac.jp//index.php?module=General&action=T0100&GakubuCD=3&lang=JA'},
+                {'name': '情報理工学院', 'url': 'http://www.ocw.titech.ac.jp//index.php?module=General&action=T0100&GakubuCD=4&lang=JA'},
+                {'name': '生命理工学院', 'url': 'http://www.ocw.titech.ac.jp//index.php?module=General&action=T0100&GakubuCD=5&lang=JA'},
+                {'name': '環境・社会理工学院', 'url': 'http://www.ocw.titech.ac.jp//index.php?module=General&action=T0100&GakubuCD=6&lang=JA'},
+                {'name': '教養科目群', 'url': 'http://www.ocw.titech.ac.jp//index.php?module=General&action=T0200&GakubuCD=7&GakkaCD=370000&tab=2&focus=100&lang=JA'},
+                {'name': '類科目', 'url': 'http://www.ocw.titech.ac.jp//index.php?module=General&action=T0100&GakubuCD=0&lang=JA'}]
 
-    if not len(Gakuins)>0:
-        Gakuins = ["{},{}".format(PAGE["gakuin"],PAGE["gakuin_url"]) for PAGE in getGakuinList()]
-
-    #ここで処理
-    '''
-    今はエラーがあった場合その学院で止まる設定
-    エラーがあったら次の学院見るようにする場合はdelの文を消してGakuins.pop(0)で読み込む
-    '''
-    gsub = Gakuins[0].split(",")
-    Gakuin = {'gakuin':gsub[0],'gakuin_url':gsub[1]}
+    g_index = int(sys.argv[1])
+    Gakuin = {"gakuin":Gakuins[g_index]["name"],"gakuin_url":Gakuins[g_index]["url"]}
     for Lecture in getLectures(Gakuin["gakuin"],Gakuin["gakuin_url"])[:Llimit]:
         OCWData = fetch_OCW(Gakuin,Lecture)
         insertLecture(column,OCWData)
         insertLforG(column,Lecture["code"],Gakuin["gakuin"])
         connection.commit()
-    del Gakuins[0]
-
-    #書き込む
-    with open("ScrapManager.txt","w") as p:
-        p.write("\n".join(Gakuins))
 
     print("OCWデータのスクレイピングを完了しました")
