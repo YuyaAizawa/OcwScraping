@@ -13,9 +13,7 @@ from bs4 import BeautifulSoup
 記述を変更するとしたらconnection，各Limit値，column，main部のいずれかのハズです
 (PRIMARY KEY設定を変更する場合，insertLecture()を少し変える必要があります)
 
-ScrapManager.txtはない場合新規作成されますが，変な文字列入ってるとエラーを吐くと思います(多分)
-学院,URL　で1行となっており，一番上の学院だけを取ってきて
-取り終わったら次の学院が一番上に来るようファイルが書き換えられます
+0-7の値を引数に与えると，そのindexの学院でScrapingが行われます
 
 connectionとcolumnの情報はrecreateOCWTable.pyとおなじにしてね！
 '''
