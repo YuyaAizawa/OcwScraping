@@ -1,6 +1,7 @@
 import pymysql
 import requests
 from bs4 import BeautifulSoup
+from settings_secret import *
 
 '''
     importLforG.py
@@ -10,10 +11,10 @@ Lecture for Gakuin
 講義と学院の対応づけだけ更新したい時用(講義ページ重いので)
 '''
 
-connection = pymysql.connect(host='localhost',
-                             user='root',
-                             password='',
-                             db='test_ocw',
+connection = pymysql.connect(host=DB_HOST,
+                             user=DB_USER,
+                             password=DB_PASSWORD,
+                             db=DB_NAME,
                              charset='utf8',
                              # Selectの結果をdictionary形式で受け取る
                              cursorclass=pymysql.cursors.DictCursor)

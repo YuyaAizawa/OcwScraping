@@ -3,6 +3,8 @@ import sys
 import traceback
 import requests
 from bs4 import BeautifulSoup
+import time
+from settings_secret import *
 
 '''
     importOCW.py
@@ -18,10 +20,10 @@ from bs4 import BeautifulSoup
 connectionとcolumnの情報はrecreateOCWTable.pyとおなじにしてね！
 '''
 
-connection = pymysql.connect(host='localhost',
-                             user='root',
-                             password='',
-                             db='test_ocw',
+connection = pymysql.connect(host=DB_HOST,
+                             user=DB_USER,
+                             password=DB_PASSWORD,
+                             db=DB_NAME,
                              charset='utf8',
                              # Selectの結果をdictionary形式で受け取る
                              cursorclass=pymysql.cursors.DictCursor)
@@ -45,9 +47,6 @@ column = {# TOP側 #
           "履修の条件(知識・技能・履修済科目等)":"CourseCond",
           # 検索用 #
           "学院":"Gakuin"}
-
-#limit値　越えて設定した場合，要素数ぶんが最大になる
-Llimit = 1 #頭からいくつ講義詳細見るか
 
 '''
 OCWから学院一覧を取得するスクリプト(6個くらいだから必要ない気もする)
@@ -222,10 +221,11 @@ if __name__=='__main__':
 
     g_index = int(sys.argv[1])
     Gakuin = {"gakuin":Gakuins[g_index]["name"],"gakuin_url":Gakuins[g_index]["url"]}
-    for Lecture in getLectures(Gakuin["gakuin"],Gakuin["gakuin_url"])[:Llimit]:
+    for Lecture in getLectures(Gakuin["gakuin"],Gakuin["gakuin_url"]):
         OCWData = fetch_OCW(Gakuin,Lecture)
         insertLecture(column,OCWData)
         insertLforG(column,Lecture["code"],Gakuin["gakuin"])
         connection.commit()
+        time.sleep(5)
 
     print("OCWデータのスクレイピングを完了しました")
