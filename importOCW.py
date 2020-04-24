@@ -164,8 +164,6 @@ def fetch_OCW(Gakuin,Lecture):
 
     for key in soup.find_all(attrs={"class":"cont-sec"}): #下部
         keyString = key.h3.text
-
-        print(key.h3.text)
         if key.ul is not None: #関連する科目
             OCW[keyString] = ",".join([j.text for j in key.ul.find_all("li")])
 
