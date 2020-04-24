@@ -129,6 +129,9 @@ def fetch_OCW(Gakuin,Lecture):
 
     OCW = {}
 
+    '''
+    上部
+    '''
     for key in soup.find(attrs={"class":"gaiyo-data clearfix"}).find_all("dl"): #上部
         value_list = []
         for value in key.dd.strings:
@@ -136,23 +139,34 @@ def fetch_OCW(Gakuin,Lecture):
             if len(value)>0: value_list.append(value)
         OCW[key.dt.text] = ", ".join(value_list)
 
+    '''
+    下部
+    '''
+    skill = soup.select_one("#learing_skill2") # 学生が身につける力
+    if skill is not None:
+        tr_list = []
+        #print([j.text for j in key.thead.tr.find_all("th")]) #ヘッダ
+        for TR in skill.find_all("tr"): #ボディ
+            tr_list.append("[{}]".format(
+                ",".join(["\\'{}\\'".format(j.text) for j in TR.find_all("td")])
+                 ))
+        OCW["学生が身につける力"] = "[{}]".format(",".join(tr_list))
+
+    plans = soup.select_one("#lecture_plans") # 授業計画・課題
+    if plans is not None:
+        tr_list = []
+        #print([j.text for j in key.thead.tr.find_all("th")]) #ヘッダ
+        for TR in plans.find_all("tr"): #ボディ
+            tr_list.append("[{}]".format(
+                ",".join(["\\'{}\\'".format(j.text) for j in TR.find_all("td")])
+                 ))
+        OCW["授業計画・課題"] = "[{}]".format(",".join(tr_list))
+
     for key in soup.find_all(attrs={"class":"cont-sec"}): #下部
         keyString = key.h3.text
 
-        if key.table is not None: #授業計画・学生が身につける力
-            tr_list = []
-            #print([j.text for j in key.thead.tr.find_all("th")]) #ヘッダ
-            for TR in key.tbody.find_all("tr"): #ボディ
-                tr_list.append("[{}]".format(
-                    ",".join(["\\'{}\\'".format(j.text) for j in TR.find_all("td")])
-                     ))
-            OCW[keyString] = "[{}]".format(",".join(tr_list))
-            ''' リスト構造で保持する場合
-            for TR in i.tbody.find_all("tr"): #ボディ
-                print([j.text.split() for j in TR.find_all("td")])
-            '''
-
-        elif key.ul is not None: #関連する科目
+        print(key.h3.text)
+        if key.ul is not None: #関連する科目
             OCW[keyString] = ",".join([j.text for j in key.ul.find_all("li")])
 
         elif key.p is not None: #上記以外の、文章で書かれた項目
