@@ -30,32 +30,34 @@ column = {# TOP側 #
           "開講元":"Department",
           "曜日・時限(講義室)":"DateRoom",
           "URL":"URL",
-         #"講義室":"Room",
           "単位数":"Credit",
-          "開講クォーター":"Quarter",
+          "開講クォーター":"Quarter", # キー
           "使用言語":"Language",
           # シラバス側 #
           "授業計画・課題":"LecturePlan",
           "成績評価の基準及び方法":"AssessStyle",
           "履修の条件(知識・技能・履修済科目等)":"CourseCond",
           # 検索用 #
-          "学院":"Gakuin"}
+          "学院":"Gakuin",
+          # その他 #
+          "取得日":"LastUpdate"}
 
 #TABLEをつくる　データベースの構造が完全になったら不要
 def createTable(column):
     with connection.cursor() as cursor:
-        KEY_COLUMN = "科目コード"
-        KEY_LENGTH = 10
+        KEY_COLUMN1 = "科目コード"
+        KEY_LENGTH1 = 10
+        KEY_COLUMN2 = "開講クォーター"
 
         sub_column = []
         for k in column:
-            if column[k] == KEY_COLUMN:
+            if column[k] == KEY_COLUMN1 or column[k] == KEY_COLUMN2:
                 #key処理そのいち
                 sub_column.append(column[k]+" TEXT NOT NULL")
             else:
                 sub_column.append(column[k]+" TEXT")
 
-        sub_column.append("PRIMARY KEY({}({}))".format(column[KEY_COLUMN],KEY_LENGTH)) #key処理そのに
+        sub_column.append("PRIMARY KEY({}({}), {})".format(column[KEY_COLUMN1],KEY_LENGTH1,column[KEY_COLUMN2])) #key処理そのに
         sql = "CREATE TABLE lecture({});".format(",".join(sub_column))
         #print(sql)
         cursor.execute(sql)
@@ -70,10 +72,11 @@ def dropTable():
 def createLforGtable(column):
     with connection.cursor() as cursor:
         sub_column = []
-        KEY_LENGTH = 20
+        KEY_LENGTH = 10
         sub_column.append("{} NVARCHAR({}) NOT NULL".format(column["科目コード"],KEY_LENGTH))
+        sub_column.append("{} NVARCHAR({}) NOT NULL".format(column["開講クォーター"],KEY_LENGTH))
         sub_column.append("{} NVARCHAR({}) NOT NULL".format(column["学院"],KEY_LENGTH))
-        sub_column.append("PRIMARY KEY({},{})".format(column["科目コード"],column["学院"]))
+        sub_column.append("PRIMARY KEY({},{},{})".format(column["科目コード"],column["開講クォーター"],column["学院"]))
         sql = "CREATE TABLE LforG({});".format(",".join(sub_column))
         #print(sql)
         cursor.execute(sql)

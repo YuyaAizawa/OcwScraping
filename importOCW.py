@@ -37,16 +37,17 @@ column = {# TOP側 #
           "開講元":"Department",
           "曜日・時限(講義室)":"DateRoom",
           "URL":"URL",
-         #"講義室":"Room",
           "単位数":"Credit",
-          "開講クォーター":"Quarter",
+          "開講クォーター":"Quarter", # キー
           "使用言語":"Language",
           # シラバス側 #
           "授業計画・課題":"LecturePlan",
           "成績評価の基準及び方法":"AssessStyle",
           "履修の条件(知識・技能・履修済科目等)":"CourseCond",
           # 検索用 #
-          "学院":"Gakuin"}
+          "学院":"Gakuin",
+          # その他
+          "取得日":"LastUpdate"}
 
 '''
 OCWから学院一覧を取得するスクリプト(6個くらいだから必要ない気もする)
@@ -184,6 +185,7 @@ def fetch_OCW(Gakuin,Lecture):
     else:
         OCW["学院"] = Gakuin["gakuin"]
 
+    OCW["取得日"] = datetime.date.today()
     return OCW
 
 #講義情報をデータベースに格納する
@@ -212,12 +214,12 @@ def insertLecture(column,LectureData):
         print("\t\tUPDATE Lecture:",LectureData["講義名"])
 
 #LectureとGakuinの結びつきデータベースの挿入操作
-def insertLforG(column,code,gakuin):
+def insertLforG(column,code,quater,gakuin):
     with connection.cursor() as cursor:
-        sql = "INSERT IGNORE INTO LforG ({},{}) ".format(column["科目コード"],column["学院"])
-        sql += "VALUES (\'{}\',\'{}\') ".format(code,gakuin)
+        sql = "INSERT IGNORE INTO LforG ({},{},{}) ".format(column["科目コード"],column["開講クォーター"],column["学院"])
+        sql += "VALUES (\'{}\',\'{}\',\'{}\') ".format(code,quater,gakuin)
         cursor.execute(sql)
-        print("\t\tUPDATE LforG:",code,"-",gakuin)
+        print("\t\tUPDATE LforG:",code,"-",quater,"-",gakuin)
 
 #OCWスクレイピング実行
 if __name__=='__main__':
@@ -236,7 +238,7 @@ if __name__=='__main__':
     for Lecture in getLectures(Gakuin["gakuin"],Gakuin["gakuin_url"]):
         OCWData = fetch_OCW(Gakuin,Lecture)
         insertLecture(column,OCWData)
-        insertLforG(column,Lecture["code"],Gakuin["gakuin"])
+        insertLforG(column,Lecture["code"],Lecture["quater"],Gakuin["gakuin"])
         connection.commit()
         time.sleep(5)
 
