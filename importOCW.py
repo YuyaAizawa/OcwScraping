@@ -4,6 +4,7 @@ import traceback
 import requests
 from bs4 import BeautifulSoup
 import time
+import datetime
 from settings_secret import *
 
 '''
@@ -99,8 +100,8 @@ def getLectures(name,url):
             name = item.find('td',class_='course_title').a.string #講義名
             lecture_url = urlprefix + item.find('td',class_='course_title').a['href']
             teachers = [te.string for te in item.find('td',class_='lecturer').find_all('a')]
-            quaterColumn = item.find('td',class_='opening_department')	#TODO テーブルに開講元カラムが存在しない場合に対応する
-            quater = quaterColumn.a.string if quaterColumn is not None else ''
+            quaterColumn = item.find('td',class_='start').string
+            quater = quaterColumn if quaterColumn is not None else ''
             if not name or not code:	# 文字列が空の場合はスキップ
                 continue
             if code:
@@ -114,7 +115,7 @@ def getLectures(name,url):
             #print(lecture_url)
             #print(quater)
 
-            LecList.append({"code":code,"name":name,"lecture_url":lecture_url})
+            LecList.append({"code":code,"quater":quater,"name":name,"lecture_url":lecture_url})
 
     return LecList
 
@@ -185,7 +186,7 @@ def fetch_OCW(Gakuin,Lecture):
     else:
         OCW["学院"] = Gakuin["gakuin"]
 
-    OCW["取得日"] = datetime.date.today()
+    OCW["取得日"] = str(datetime.date.today())
     return OCW
 
 #講義情報をデータベースに格納する

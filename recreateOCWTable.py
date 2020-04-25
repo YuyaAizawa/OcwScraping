@@ -45,7 +45,7 @@ column = {# TOP側 #
 def createTable(column):
     with connection.cursor() as cursor:
         KEY_COLUMN1 = "科目コード"
-        KEY_LENGTH1 = 10
+        KEY_LENGTH = 15
         KEY_COLUMN2 = "開講クォーター"
 
         sub_column = []
@@ -56,7 +56,7 @@ def createTable(column):
             else:
                 sub_column.append(column[k]+" TEXT")
 
-        sub_column.append("PRIMARY KEY({}({}), {})".format(column[KEY_COLUMN1],KEY_LENGTH1,column[KEY_COLUMN2])) #key処理そのに
+        sub_column.append("PRIMARY KEY({}({}), {}({}))".format(column[KEY_COLUMN1],KEY_LENGTH,column[KEY_COLUMN2],KEY_LENGTH)) #key処理そのに
         sql = "CREATE TABLE lecture({});".format(",".join(sub_column))
         #print(sql)
         cursor.execute(sql)
@@ -71,7 +71,7 @@ def dropTable():
 def createLforGtable(column):
     with connection.cursor() as cursor:
         sub_column = []
-        KEY_LENGTH = 10
+        KEY_LENGTH = 15
         sub_column.append("{} NVARCHAR({}) NOT NULL".format(column["科目コード"],KEY_LENGTH))
         sub_column.append("{} NVARCHAR({}) NOT NULL".format(column["開講クォーター"],KEY_LENGTH))
         sub_column.append("{} NVARCHAR({}) NOT NULL".format(column["学院"],KEY_LENGTH))
