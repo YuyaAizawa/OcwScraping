@@ -4,7 +4,6 @@ from settings_secret import *
 '''
     recreateOCWTable.py
 
-(新規にテーブルを構築する場合はdropTable()を#でコメントアウトするよう願います)
 講義情報のテーブルを構築し直します
 打ち込んですぐ行われたらやばいので，質問フェーズを設けてます
 (yを入力すると再構築が行われ，それ以外で再構築を中止します)
@@ -65,7 +64,7 @@ def createTable(column):
 #TABLEを削除する
 def dropTable():
     with connection.cursor() as cursor:
-        sql = "DROP TABLE lecture;"
+        sql = "DROP TABLE IF EXISTS lecture;"
         cursor.execute(sql)
 
 #LforGのTABLEをつくる　1回しかしなそう
@@ -84,7 +83,7 @@ def createLforGtable(column):
 #LforGのTABLEを削除する
 def dropLforGtable():
     with connection.cursor() as cursor:
-        sql = "DROP TABLE LforG;"
+        sql = "DROP TABLE IF EXISTS LforG;"
         cursor.execute(sql)
 
 if __name__=='__main__':
